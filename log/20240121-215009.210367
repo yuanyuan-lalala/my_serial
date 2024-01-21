@@ -1,0 +1,5 @@
+Log file created at: 2024/01/21 21:50:09
+Running on machine: yuanyuan-Legion-Y9000P-IAH7H
+Running duration (h:mm:ss): 0:00:00
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20240121 21:50:09.385117 140681346092672 test_serial.cpp:28] frameID frameCount workStatus comboStatus longitude latitude height northSpeed verticalSpeed eastSpeed heading pitch roll wx wy wz ax ay az gpsLongitude gpsLatitude gpsHeight gpsHorizontalSpeed gpsTrackAngle gpsVerticalSpeed gpsHeading year month day hour minute millisecond gpsPositionStatus gpsSpeedStatus gpsDirectionStatus gpsTimeStatus 

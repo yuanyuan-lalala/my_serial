@@ -2,6 +2,8 @@
 #include <ros/ros.h>
 #include <serial/serial.h>
 #include <iostream>
+# include "sensor_data.hpp"
+# include "test_serial.hpp"
  
 int main(int argc, char** argv)
 {
@@ -19,7 +21,7 @@ int main(int argc, char** argv)
     sp.setBaudrate(614400);
     //串口设置timeout
     sp.setTimeout(to);
- 
+
     try
     {
         //打开串口
@@ -61,6 +63,7 @@ int main(int argc, char** argv)
             //把数据发送回去
             sp.write(buffer, n);
         }
+
         loop_rate.sleep();
     }
     

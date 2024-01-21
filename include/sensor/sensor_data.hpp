@@ -2,7 +2,8 @@
 #include "iostream"
 #include <vector>
 #include <serial/serial.h>
-
+#include <memory>  
+#include <cstring> 
 class Sensor_Data {
 public:
   struct Frame {
@@ -79,35 +80,33 @@ public:
           gpsPositionStatus(0),
           gpsSpeedStatus(0),
           gpsDirectionStatus(0),
-          gpsTimeStatus(0) {
-    }
-  }
-  
-  
-  ;
+          gpsTimeStatus(0) {}
+  };
   // 在 parseFrame 函数中扩展对新字段的解析逻辑
-  void parseFrame(const std::vector<uint8_t> &data) {
+  std::shared_ptr<Frame> parseFrame(const std::vector<uint8_t> &data) {
 
     // std::cout<<"state : "<<state<<std::endl;
     if (data.size() < sizeof(Frame)) {
       std::cerr << "Error: Insufficient data for parsing." << std::endl;
-      return;
+      return nullptr;
     }
 
-    framePtr = reinterpret_cast<const Frame *>(data.data());
+    auto parsedFrame = std::make_shared<Frame>();
+    std::memcpy(parsedFrame.get(), data.data(), sizeof(Frame));
+
 
     // 在这里，你可以访问 framePtr 中的新增字段，例如：
-    std::cout << "GPS Horizontal Speed: " << framePtr->gpsHorizontalSpeed
+    std::cout << "GPS Horizontal Speed: " << parsedFrame->gpsHorizontalSpeed
               << std::endl;
-    std::cout << "GPS Track Angle: " << framePtr->gpsTrackAngle << std::endl;
-    std::cout << "GPS Vertical Speed: " << framePtr->gpsVerticalSpeed
+    std::cout << "GPS Track Angle: " << parsedFrame->gpsTrackAngle << std::endl;
+    std::cout << "GPS Vertical Speed: " << parsedFrame->gpsVerticalSpeed
               << std::endl;
    
 
-    
+    return parsedFrame;
   };
 
-  const Frame *framePtr = NULL;
-
+  // const Frame *framePtr = NULL;
+ 
 
 };

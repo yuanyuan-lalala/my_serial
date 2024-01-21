@@ -45,13 +45,14 @@ public:
     
     uint8_t m_buffer[10000];
         
-    size_t m_length_to_read = 1000;
+    size_t m_length_to_read = 0;
     size_t m_length_real;
 
     
 
     serial::Serial m_my_serial;
    private:
+
     Sensor_Data sensor_data;
 
 }; 

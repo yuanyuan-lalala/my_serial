@@ -38,16 +38,19 @@ void TestSerial::build_serial(){
 
   m_my_serial.setPort(m_port_name);
   m_my_serial.setBaudrate(m_baudrate);
-  m_my_serial.setTimeout(0,1000,0,1000,0);
-  
+  serial::Timeout to = serial::Timeout::simpleTimeout(100);
+  // m_my_serial.setTimeout(0,1000,0,1000,0);
+  m_my_serial.setTimeout(to);
+
+
   m_my_serial.open();
   std::cout << "Is the serial port open?";
   if(m_my_serial.isOpen()){
     std::cout << " Yes." << std::endl;}
   else{
     std::cout << " No." << std::endl;}
-    // m_my_serial.write("Hello, Serial!");
-  std::cout << "the baudrate now : " << m_my_serial.getBaudrate() << std::endl;
+    
+  
   std::cout << "the baudrate now : " << m_my_serial.getBaudrate() << std::endl;
   std::cout << "get the byteSize now : " << m_my_serial.getBytesize() << std::endl;
   std::cout << "get the flow control : " << m_my_serial.getFlowcontrol() << std::endl;
@@ -69,11 +72,14 @@ void TestSerial::receive(){
 
   m_length_real = m_my_serial.read(m_buffer, m_length_to_read);
   if (!decode())  ///解析数据
-      {
-          my_sleep(1000);
-      }
-
-  std::cout<<"decode finished!"<<std::endl;
+  {
+          // my_sleep(1000);
+        std::cout<<"decode fail!"<<std::endl;
+  }
+  else{
+      std::cout<<"decode finished!"<<std::endl;
+  }
+  
   m_my_serial.flush();
 }
 
@@ -111,6 +117,7 @@ bool TestSerial::decode() {
         state = RSYS_RX_FREE;
       }
       break;
+
     case RSYS_RX_FIRST_GOOD:
       if (buffer_data == 0xAA) { // 第二个帧头校验完成后进入长度环节
         state = RSYS_RX_LENGTH;
@@ -118,37 +125,40 @@ bool TestSerial::decode() {
       } else {
         state = RSYS_RX_FREE;
       }
+      break;
     case RSYS_RX_LENGTH: ///   后面具体内容的长度 1个字节
       if (Rsys_RX_Buffer.size() <= 3) {
         Rsys_RX_Buffer.push_back(buffer_data); /// 收集前3字节
-
-
-        Rsys_RX_Real_Data.push_back(buffer_data);
+        
       } else {
         data_length = Rsys_RX_Buffer[2];
-        Rsys_RX_Buffer.push_back(buffer_data);
-        Rsys_RX_Real_Data.push_back(buffer_data);
-
-        // 帧长+帧数据内容字节累加和的低8位
-        if (Rsys_RX_Buffer.size() == 3 + data_length) {
-          state = RSYS_RX_CHECK;
+        //TODO data_length = 0时没有考虑
+        if (Rsys_RX_Buffer.size() == 3 + data_length ) {
+          state = RSYS_RX_CHECK;         
         }
+        Rsys_RX_Buffer.push_back(buffer_data);
+        Rsys_RX_Real_Data.push_back(buffer_data); 
+        
       }
+      break;
     case RSYS_RX_CHECK:
+    // 帧长+帧数据内容字节累加和的低8位
       check_flag = check_sum(Rsys_RX_Real_Data);
       if (check_flag != buffer_data) {
         // 校验码不对
         state = RSYS_RX_FREE;
       } else {
         // 继续解包
-        sensor_data.parseFrame(Rsys_RX_Real_Data);
-        if(sensor_data.framePtr->frameID != 0x41){
+        std::shared_ptr<Sensor_Data::Frame> sensor_data_frame_ptr = sensor_data.parseFrame(Rsys_RX_Real_Data);
+        //帧标识
+        if(sensor_data_frame_ptr->frameID != 0x41){
             state = RSYS_RX_FREE;
         }else{
-          LOG(INFO)<<sensor_data.framePtr->frameID;
+          LOG(INFO)<<sensor_data_frame_ptr->frameID;
           //解包完毕
           return true;
         }
+      break;
         
       }
     }
@@ -165,15 +175,6 @@ unsigned char TestSerial::check_sum(std::vector<unsigned char>& Rsys_RX_Real_Dat
   
   return static_cast<unsigned char>(sum % 256);
 }
-
-
-
-
-
-
-
-
-
 
 
 
