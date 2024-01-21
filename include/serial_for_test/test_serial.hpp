@@ -1,7 +1,10 @@
 #pragma once
 
 #include "iostream"
+#include "sensor_data.hpp"
 #include "serial/serial.h"
+#include "glog/logging.h"
+
 #define RSYS_RX_FREE             0
 #define RSYS_RX_FIRST_GOOD       1
 #define RSYS_RX_SECOND_GOOD      2
@@ -42,13 +45,14 @@ public:
     
     uint8_t m_buffer[10000];
         
-    size_t m_length;
+    size_t m_length_to_read = 1000;
+    size_t m_length_real;
 
-    private:
+    
 
     serial::Serial m_my_serial;
-   
-
+   private:
+    Sensor_Data sensor_data;
 
 }; 
 

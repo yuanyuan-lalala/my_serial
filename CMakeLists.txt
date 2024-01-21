@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   serial 
 )
+find_package (glog 0.6.0 REQUIRED)
 # find_package(serial REQUIRED)
 
 ## System dependencies are found with CMake's conventions
@@ -126,6 +127,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${serial_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/include/serial_for_test
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/sensor
 )
 
 ## Declare a C++ library
@@ -172,10 +174,12 @@ add_dependencies(test_serial_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_E
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   ${ALL_TARGET_LIBRARIES}
+  glog::glog
 )
 target_link_libraries(test_serial_node
   ${catkin_LIBRARIES}
   ${ALL_TARGET_LIBRARIES}
+  glog::glog
 )
 
 #############

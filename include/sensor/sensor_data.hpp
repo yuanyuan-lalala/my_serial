@@ -43,15 +43,58 @@ public:
     uint8_t gpsSpeedStatus;
     uint8_t gpsDirectionStatus;
     uint8_t gpsTimeStatus;
-  };
+    Frame() 
+        : frameID(0),
+          frameCount(0),
+          workStatus(0),
+          comboStatus(0),
+          longitude(0),
+          latitude(0),
+          height(0),
+          northSpeed(0),
+          verticalSpeed(0),
+          eastSpeed(0),
+          heading(0),
+          pitch(0),
+          roll(0),
+          wx(0),
+          wy(0),
+          wz(0),
+          ax(0),
+          ay(0),
+          az(0),
+          gpsLongitude(0),
+          gpsLatitude(0),
+          gpsHeight(0),
+          gpsHorizontalSpeed(0),
+          gpsTrackAngle(0),
+          gpsVerticalSpeed(0),
+          gpsHeading(0),
+          year(0),
+          month(0),
+          day(0),
+          hour(0),
+          minute(0),
+          millisecond(0),
+          gpsPositionStatus(0),
+          gpsSpeedStatus(0),
+          gpsDirectionStatus(0),
+          gpsTimeStatus(0) {
+    }
+  }
+  
+  
+  ;
   // 在 parseFrame 函数中扩展对新字段的解析逻辑
   void parseFrame(const std::vector<uint8_t> &data) {
+
+    // std::cout<<"state : "<<state<<std::endl;
     if (data.size() < sizeof(Frame)) {
       std::cerr << "Error: Insufficient data for parsing." << std::endl;
       return;
     }
 
-    const Frame *framePtr = reinterpret_cast<const Frame *>(data.data());
+    framePtr = reinterpret_cast<const Frame *>(data.data());
 
     // 在这里，你可以访问 framePtr 中的新增字段，例如：
     std::cout << "GPS Horizontal Speed: " << framePtr->gpsHorizontalSpeed
@@ -59,9 +102,12 @@ public:
     std::cout << "GPS Track Angle: " << framePtr->gpsTrackAngle << std::endl;
     std::cout << "GPS Vertical Speed: " << framePtr->gpsVerticalSpeed
               << std::endl;
-    // ... 其他新增字段的访问
+   
 
-    // 如果需要，你还可以将新增字段的数据存储到类的成员变量中
-    // ...
-  }
+    
+  };
+
+  const Frame *framePtr = NULL;
+
+
 };

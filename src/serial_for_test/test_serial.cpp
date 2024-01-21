@@ -19,6 +19,18 @@ TestSerial::TestSerial(int argc,char** argv):m_argc(argc),m_argv(argv){
   m_baudrate = sscanf(m_argv[2], "%lu", &m_baudrate);
   m_test_string = m_argv[3];
   
+  
+  std::cout<<"init log!"<<std::endl;
+  google::InitGoogleLogging("my_serial_log");
+  google::SetLogDestination(google::GLOG_INFO, "/home/yuanyuan/catkin_LINS/src/my_serial/log/");
+  
+  
+  LOG(INFO)<<"frameID "<<"frameCount "<<"workStatus "<<"comboStatus "<<"longitude "<<"latitude "
+  <<"height "<<"northSpeed "<<"verticalSpeed "<<"eastSpeed "<<"heading "<<"pitch "<<"roll "<<"wx "
+  <<"wy "<<"wz "<<"ax "<<"ay "<<"az "<<"gpsLongitude "<<"gpsLatitude "<<"gpsHeight "<<"gpsHorizontalSpeed "
+  <<"gpsTrackAngle "<<"gpsVerticalSpeed "<<"gpsHeading "<<"year "<<"month "<<"day "<<"hour "<<"minute "
+  <<"millisecond "<<"gpsPositionStatus "<<"gpsSpeedStatus "<<"gpsDirectionStatus "<<"gpsTimeStatus ";
+   
 
 }
 
@@ -34,6 +46,8 @@ void TestSerial::build_serial(){
     std::cout << " Yes." << std::endl;}
   else{
     std::cout << " No." << std::endl;}
+    // m_my_serial.write("Hello, Serial!");
+  std::cout << "the baudrate now : " << m_my_serial.getBaudrate() << std::endl;
   std::cout << "the baudrate now : " << m_my_serial.getBaudrate() << std::endl;
   std::cout << "get the byteSize now : " << m_my_serial.getBytesize() << std::endl;
   std::cout << "get the flow control : " << m_my_serial.getFlowcontrol() << std::endl;
@@ -53,12 +67,14 @@ void TestSerial::my_sleep(unsigned long milliseconds) const{
 
 void TestSerial::receive(){
 
-   m_my_serial.read(m_buffer, m_length);
-   if (!decode())  ///解析数据
-        {
-            my_sleep(1000);
-        }
+  m_length_real = m_my_serial.read(m_buffer, m_length_to_read);
+  if (!decode())  ///解析数据
+      {
+          my_sleep(1000);
+      }
 
+  std::cout<<"decode finished!"<<std::endl;
+  m_my_serial.flush();
 }
 
 void TestSerial::send(unsigned char* buff, size_t& length){
@@ -74,14 +90,13 @@ bool TestSerial::decode() {
   static std::vector<unsigned char> Rsys_RX_Real_Data;
 
   static std::vector<unsigned char> num;
-  static int temp_num_length;
-  static bool return_flag;
+
   unsigned short data_length = 0;
   unsigned char buffer_data = 0;
   unsigned char check_flag = 0;
-  return_flag = false;
+
   // 遍历所有的buffer
-  for (size_t i = 0; i < m_length; i++) {
+  for (size_t i = 0; i < m_length_real; i++) {
     buffer_data = m_buffer[i];
     switch (state) {
     case RSYS_RX_FREE:
@@ -107,6 +122,7 @@ bool TestSerial::decode() {
       if (Rsys_RX_Buffer.size() <= 3) {
         Rsys_RX_Buffer.push_back(buffer_data); /// 收集前3字节
 
+
         Rsys_RX_Real_Data.push_back(buffer_data);
       } else {
         data_length = Rsys_RX_Buffer[2];
@@ -125,7 +141,14 @@ bool TestSerial::decode() {
         state = RSYS_RX_FREE;
       } else {
         // 继续解包
-
+        sensor_data.parseFrame(Rsys_RX_Real_Data);
+        if(sensor_data.framePtr->frameID != 0x41){
+            state = RSYS_RX_FREE;
+        }else{
+          LOG(INFO)<<sensor_data.framePtr->frameID;
+          //解包完毕
+          return true;
+        }
         
       }
     }
@@ -142,6 +165,14 @@ unsigned char TestSerial::check_sum(std::vector<unsigned char>& Rsys_RX_Real_Dat
   
   return static_cast<unsigned char>(sum % 256);
 }
+
+
+
+
+
+
+
+
 
 
 
